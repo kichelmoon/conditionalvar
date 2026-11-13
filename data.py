@@ -97,6 +97,3 @@ def annualise_return(r: float, freq: int = 252) -> float:
 def annualise_vol(sigma: float, freq: int = 252) -> float:
     """Daily volatility → annualised."""
     return sigma * np.sqrt(freq)
-
-market_data = fetch_data()
-print(market_data.prices.head())
