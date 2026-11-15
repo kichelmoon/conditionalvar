@@ -120,7 +120,4 @@ def _check_status(status: str, solver_name: str) -> None:
             f"{solver_name} failed with status '{status}'. "
             "Try relaxing constraints or increasing data."
         )
-
-market_data = data.fetch_data()
-portfolio = optimize_mean_variance(market_data.returns)
-print(portfolio)
+    

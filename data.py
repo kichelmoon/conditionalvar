@@ -15,7 +15,7 @@ import yfinance as yf
 
 
 TICKERS = [
-    "AAPL", "MSFT", "GOOGL", "AMZN", "META",     # Technology
+    "AAPL", "MSFT", "GOOGL", "AMZN",             # Technology
     "JPM",  "GS",   "BAC",                       # Financials
     "JNJ",  "PFE",                               # Healthcare
     "XOM",  "CVX",                               # Energy
