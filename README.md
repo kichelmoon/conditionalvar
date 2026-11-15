@@ -1,6 +1,6 @@
 # Conditional Value at Risk using Convex Duality
 
-Minimising the Conditional Value at Risk (CVaR) of a stock portfolio as a linear program, and reading the dual solution as a worst-case probability measure** over historical scenarios.
+Minimising the Conditional Value at Risk (CVaR) of a stock portfolio as a linear program, and reading the dual solution as a worst-case probability measure over historical scenarios.
 
 ## Motivation
 
