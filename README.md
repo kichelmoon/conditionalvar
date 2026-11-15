@@ -10,15 +10,6 @@ The next step is usually *Value at Risk* (VaR), which is used in practice (Basel
 
 *Conditional Value at Risk* (Expected Shortfall) is a coherent risk measure (Artzner et al., 1999). For scenario data its minimisation is a linear program (Rockafellar & Uryasev, 2000). CVaR is the support function of a convex set of probability measures, the *risk envelope*. The LP dual therefore yields the worst-case reweighting of history for free.
 
-## What the project shows
-
-- **CVaR-LP** (Rockafellar–Uryasev) with the correct empirical definition for discrete distributions. Here $\mathbb E[L\mid L\ge \mathrm{VaR}]$ is *not* the right formula, so the code uses the R–U / Acerbi–Tasche definition.
-- **Risk envelope and duality.** The dual function $g(q)=\min_{w\in W}\langle q,-Rw\rangle$ is evaluated exactly. Both the duality gap and the representation gap are reported.
-- **Structure of $q^*$.** Full atoms ($q_t=c$) are separated from fractional atoms on scenarios tied at $\eta^*$, which explains the non-uniqueness of the dual.
-- **KKT certificate.** All held assets have the same expected loss under $Q^*$, and it equals $\mathrm{CVaR}^*$. **Euler risk contributions** add up exactly to $\mathrm{CVaR}^*$.
-- **Comparison with min-variance**, in sample and out of sample, with a block-bootstrap confidence interval for the CVaR difference.
-- **Robustness:** bootstrap stability of the weights, sensitivity to $\alpha$, and a walk-forward backtest.
-
 The notebook [`analysis.ipynb`](analysis.ipynb) contains the derivations and the results.
 
 ## How to use this
