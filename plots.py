@@ -32,7 +32,7 @@ COLORS = {
 }
 
 def plot_weights(
-    #cvar_result: PortfolioResult, TODO
+    cvar_result: PortfolioResult,
     mv_result: PortfolioResult,
     tickers: list[str],
     save_path: Optional[str] = None,
@@ -43,13 +43,13 @@ def plot_weights(
     width = 0.38
 
     fig, ax = plt.subplots(figsize=(12, 4))
-    #ax.bar(x - width / 2, cvar_result.weights, width, label="Min-CVaR", color=COLORS["cvar"], alpha=0.85)
+    ax.bar(x - width / 2, cvar_result.weights, width, label="Min-CVaR", color=COLORS["cvar"], alpha=0.85)
     ax.bar(x + width / 2, mv_result.weights, width, label="Min-Variance", color=COLORS["mv"], alpha=0.85)
 
     ax.set_xticks(x)
     ax.set_xticklabels(tickers, rotation=35, ha="right", fontsize=9)
     ax.set_ylabel("Portfolio Weight", fontsize=11)
-    ax.set_title("Portfolio Weights of Variance-optimal Portfolio", fontsize=12)
+    ax.set_title("Portfolio Weights: CVaR-optimal vs Variance-optimal", fontsize=12)
     ax.legend(fontsize=10)
 
     fig.tight_layout()
@@ -64,5 +64,6 @@ def _save(fig: plt.Figure, path: Optional[str]) -> None:
 
 
 market_data = data.fetch_data()
-portfolio = optimization.optimize_mean_variance(market_data.returns)
-plot_weights(portfolio, data.TICKERS, "plot.png")
+cvar_portfolio = optimization.optimize_min_cvar(market_data.returns)
+m_portfolio = optimization.optimize_mean_variance(market_data.returns)
+plot_weights(cvar_portfolio, m_portfolio, data.TICKERS, "plot.png")
