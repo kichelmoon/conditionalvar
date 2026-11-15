@@ -13,7 +13,7 @@ The next step is usually *Value at Risk* (VaR), which is used in practice (Basel
 ## What the project shows
 
 - **CVaR-LP** (Rockafellar–Uryasev) with the correct empirical definition for discrete distributions. Here $\mathbb E[L\mid L\ge \mathrm{VaR}]$ is *not* the right formula, so the code uses the R–U / Acerbi–Tasche definition.
-- **Risk envelope and duality.** The dual function $g(q)=\min_{w\in W}\langle q,-Rw\rangle$ is evaluated exactly. Both the duality gap and the representation gap $|\mathrm{CVaR}^*-\mathbb E_{Q^*}[L]|$ are reported.
+- **Risk envelope and duality.** The dual function $g(q)=\min_{w\in W}\langle q,-Rw\rangle$ is evaluated exactly. Both the duality gap and the representation gap are reported.
 - **Structure of $q^*$.** Full atoms ($q_t=c$) are separated from fractional atoms on scenarios tied at $\eta^*$, which explains the non-uniqueness of the dual.
 - **KKT certificate.** All held assets have the same expected loss under $Q^*$, and it equals $\mathrm{CVaR}^*$. **Euler risk contributions** add up exactly to $\mathrm{CVaR}^*$.
 - **Comparison with min-variance**, in sample and out of sample, with a block-bootstrap confidence interval for the CVaR difference.
