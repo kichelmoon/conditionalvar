@@ -1,6 +1,6 @@
-# Conditional Value at Risk: Portfolio Optimisation through Convex Duality
+# Conditional Value at Risk using Convex Duality
 
-Minimising the Conditional Value at Risk (CVaR) of a stock portfolio as a linear program, and reading the **dual solution as a worst-case probability measure** over historical scenarios.
+Minimising the Conditional Value at Risk (CVaR) of a stock portfolio as a linear program, and reading the dual solution as a worst-case probability measure over historical scenarios.
 
 ## Motivation
 
@@ -9,16 +9,6 @@ The first technique usually taught in portfolio optimisation is Markowitz *minim
 The next step is usually *Value at Risk* (VaR), which is used in practice (Basel II). Mathematically it is unpleasant: as a function of the weights it is in general neither convex nor subadditive. Merging positions can increase VaR, and optimising it is a non-convex problem.
 
 *Conditional Value at Risk* (Expected Shortfall) is a coherent risk measure (Artzner et al., 1999). For scenario data its minimisation is a linear program (Rockafellar & Uryasev, 2000). CVaR is the support function of a convex set of probability measures, the *risk envelope*. The LP dual therefore yields the worst-case reweighting of history for free.
-
-## What the project shows
-
-- **CVaR-LP** (Rockafellar–Uryasev) with the correct empirical definition for discrete distributions. Here $\mathbb E[L\mid L\ge \mathrm{VaR}]$ is *not* the right formula, so the code uses the R–U / Acerbi–Tasche definition.
-- **Risk envelope and duality.** The dual function $g(q)=\min_{w\in W}\langle q,-Rw\rangle$ is evaluated exactly. Both the duality gap and the representation gap $|\mathrm{CVaR}^*-\mathbb E_{Q^*}[L]|$ are reported.
-- **Structure of $q^*$.** Full atoms ($q_t=c$) are separated from fractional atoms on scenarios tied at $\eta^*$, which explains the non-uniqueness of the dual.
-- **KKT certificate.** All held assets have the same expected loss under $Q^*$, and it equals $\mathrm{CVaR}^*$. **Euler risk contributions** add up exactly to $\mathrm{CVaR}^*$.
-- **Comparison with min-variance**, in sample and out of sample, with a block-bootstrap confidence interval for the CVaR difference.
-- **Robustness:** bootstrap stability of the weights, sensitivity to $\alpha$, and a walk-forward backtest.
-- **Universe comparison (14 vs 100 stocks):** the 14-stock universe is nested in the 100-stock one on identical dates. This gives a checked in-sample guarantee ($\mathrm{CVaR}^*_{100}\le\mathrm{CVaR}^*_{14}$), a checked tie count at $\eta^*$ (at least as many ties as held assets), and out-of-sample measures of overfitting.
 
 The notebook [`analysis.ipynb`](analysis.ipynb) contains the derivations and the results.
 
@@ -37,7 +27,7 @@ Prices are cached in `data_cache/` (git-ignored), so later runs are reproducible
 
 - **Simple returns.** The portfolio loss $-R_t^\top w$ is linear in $w$ only for simple returns. Log-returns do not aggregate linearly across assets.
 - **Daily risk figures.** VaR and CVaR are reported per day. They are not annualised with $\sqrt{252}$, which is valid only for standard deviations of i.i.d. returns.
-- **Survivorship bias.** Both universes (14 and 100 names) consist of *today's* US large caps that were already listed in 2010. That is enough to illustrate the mathematics, but not to support claims about real-world performance. The bias is stronger for the larger universe.
+- **Survivorship bias.** The universe consists of 14 of *today's* US large caps. That is enough to illustrate the mathematics, but not to support claims about real-world performance.
 - **Estimation error.** At $\alpha=0.95$ the CVaR estimate rests on only about 150 tail days. Out of sample, Min-CVaR does not necessarily beat Min-Variance. The notebook discusses and quantifies this.
 
 ## References
