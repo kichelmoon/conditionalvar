@@ -18,6 +18,7 @@ The next step is usually *Value at Risk* (VaR), which is used in practice (Basel
 - **KKT certificate.** All held assets have the same expected loss under $Q^*$, and it equals $\mathrm{CVaR}^*$. **Euler risk contributions** add up exactly to $\mathrm{CVaR}^*$.
 - **Comparison with min-variance**, in sample and out of sample, with a block-bootstrap confidence interval for the CVaR difference.
 - **Robustness:** bootstrap stability of the weights, sensitivity to $\alpha$, and a walk-forward backtest.
+- **Universe comparison (14 vs 100 stocks):** the 14-stock universe is nested in the 100-stock one on identical dates. This gives a checked in-sample guarantee ($\mathrm{CVaR}^*_{100}\le\mathrm{CVaR}^*_{14}$), a checked tie count at $\eta^*$ (at least as many ties as held assets), and out-of-sample measures of overfitting.
 
 The notebook [`analysis.ipynb`](analysis.ipynb) contains the derivations and the results.
 
@@ -36,7 +37,7 @@ Prices are cached in `data_cache/` (git-ignored), so later runs are reproducible
 
 - **Simple returns.** The portfolio loss $-R_t^\top w$ is linear in $w$ only for simple returns. Log-returns do not aggregate linearly across assets.
 - **Daily risk figures.** VaR and CVaR are reported per day. They are not annualised with $\sqrt{252}$, which is valid only for standard deviations of i.i.d. returns.
-- **Survivorship bias.** The universe consists of 14 of *today's* US large caps. That is enough to illustrate the mathematics, but not to support claims about real-world performance.
+- **Survivorship bias.** Both universes (14 and 100 names) consist of *today's* US large caps that were already listed in 2010. That is enough to illustrate the mathematics, but not to support claims about real-world performance. The bias is stronger for the larger universe.
 - **Estimation error.** At $\alpha=0.95$ the CVaR estimate rests on only about 150 tail days. Out of sample, Min-CVaR does not necessarily beat Min-Variance. The notebook discusses and quantifies this.
 
 ## References

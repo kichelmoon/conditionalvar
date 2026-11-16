@@ -52,8 +52,30 @@ CRISES = [
 ]
 
 
-def _style(label: str, i: int) -> tuple[str, str]:
+def _style(label: str, i: int, styles: Optional[dict] = None) -> tuple[str, str]:
+    if styles and label in styles:
+        return styles[label]
     return PORTFOLIO_STYLE.get(label, (f"C{i}", "-"))
+
+
+def universe_styles(labels: list[str]) -> dict[str, tuple[str, str]]:
+    """
+    Styles for labels like "Min-CVaR (14)": colour by portfolio type,
+    line style by universe (first universe solid, second dotted, ...).
+    """
+    universes = []
+    for lab in labels:
+        u = lab.rsplit("(", 1)[-1].rstrip(")") if "(" in lab else ""
+        if u not in universes:
+            universes.append(u)
+    dashes = ["-", ":", "-.", "--"]
+    out = {}
+    for i, lab in enumerate(labels):
+        base = lab.split(" (")[0]
+        color = PORTFOLIO_STYLE.get(base, (f"C{i}", "-"))[0]
+        u = lab.rsplit("(", 1)[-1].rstrip(")") if "(" in lab else ""
+        out[lab] = (color, dashes[universes.index(u) % len(dashes)])
+    return out
 
 
 def _shade_crises(axes, dates: pd.DatetimeIndex, label_axis=None) -> None:
@@ -230,6 +252,7 @@ def plot_oos_performance(results: dict[str, PortfolioResult], test_returns: np.n
     axes[1].set_title("Rolling tail risk", fontsize=12)
     axes[1].legend(fontsize=10)
     axes[1].yaxis.set_major_formatter(plt.FuncFormatter(lambda v, _: f"{v:.2%}"))
+    axes[1].xaxis.set_major_locator(mdates.YearLocator())
     axes[1].xaxis.set_major_formatter(mdates.DateFormatter("%Y"))
     _shade_crises(axes, test_dates, label_axis=axes[0])
     fig.tight_layout()
@@ -293,12 +316,13 @@ def plot_alpha_sensitivity(sens: pd.DataFrame, tickers: list[str],
 
 def plot_backtest(port_returns: pd.DataFrame, alpha: float = 0.95, window: int = 252,
                   lookback: int = 756, rebalance: int = 63,
+                  styles: Optional[dict] = None,
                   save_path: Optional[str] = None) -> plt.Figure:
     """Walk-forward backtest: wealth and rolling CVaR per strategy."""
     fig, axes = plt.subplots(2, 1, figsize=(13, 8), sharex=True)
     ones = np.ones(1)
     for i, label in enumerate(port_returns.columns):
-        color, ls = _style(label, i)
+        color, ls = _style(label, i, styles)
         r = port_returns[label]
         axes[0].plot(r.index, (1 + r).cumprod(), color=color, ls=ls, lw=2, label=label)
         rc = rolling_cvar(ones, r.to_numpy()[:, None], r.index, window=window, alpha=alpha)
@@ -313,6 +337,81 @@ def plot_backtest(port_returns: pd.DataFrame, alpha: float = 0.95, window: int =
     axes[1].legend(fontsize=10)
     axes[1].xaxis.set_major_formatter(mdates.DateFormatter("%Y"))
     _shade_crises(axes, port_returns.index, label_axis=axes[0])
+    fig.tight_layout()
+    _save(fig, save_path)
+    return fig
+
+
+# ------------------------------------------------------------ universes
+def plot_universe_comparison(runs, window: int = 126,
+                             save_path: Optional[str] = None) -> plt.Figure:
+    """
+    Four panels comparing universes (runs: list of comparison.UniverseRun):
+      (a) in-sample vs out-of-sample CVaR,
+      (b) concentration curves: cumulative weight of the k largest positions,
+      (c) out-of-sample wealth,
+      (d) out-of-sample rolling CVaR.
+    """
+    from .risk import empirical_cvar
+
+    labels, entries = [], []
+    for run in runs:
+        for name, res in run.results.items():
+            lab = f"{name} ({run.name})"
+            labels.append(lab)
+            entries.append((lab, run, res))
+    styles = universe_styles(labels)
+    alpha = runs[0].alpha
+    fig, axes = plt.subplots(2, 2, figsize=(14, 9))
+
+    ax = axes[0, 0]
+    x = np.arange(len(entries))
+    is_c = [res.cvar for _, _, res in entries]
+    oos_c = [empirical_cvar(-(run.data.test_returns @ res.weights), alpha) for _, run, res in entries]
+    cols = [styles[lab][0] for lab, _, _ in entries]
+    ax.bar(x - 0.2, is_c, 0.38, color=cols, alpha=0.45, label="in-sample")
+    ax.bar(x + 0.2, oos_c, 0.38, color=cols, alpha=0.95, label="out-of-sample")
+    for xi, a, b in zip(x, is_c, oos_c):
+        ax.text(xi + 0.2, b, f"{b / a:.2f}x", ha="center", va="bottom", fontsize=8)
+    ax.set_xticks(x)
+    ax.set_xticklabels([lab.replace(" (", "\n(") for lab in labels], fontsize=8)
+    ax.set_ylabel(f"CVaR {alpha:.0%} (daily)")
+    ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda v, _: f"{v:.2%}"))
+    ax.set_title("In-sample vs out-of-sample CVaR (label: OOS / IS)", fontsize=11)
+    ax.legend(fontsize=8, loc="lower right")
+
+    ax = axes[0, 1]
+    for lab, run, res in entries:
+        w = np.sort(np.clip(res.weights, 0, None))[::-1]
+        cum = np.cumsum(w) / w.sum()
+        k = int(np.searchsorted(cum, 0.999)) + 2
+        color, ls = styles[lab]
+        ax.step(np.arange(1, min(k, len(w)) + 1), cum[:k], where="post", color=color, ls=ls, lw=2, label=lab)
+    ax.set_xlabel("Number of largest positions")
+    ax.set_ylabel("Cumulative weight")
+    ax.set_title("Concentration curves (training weights)", fontsize=11)
+    ax.legend(fontsize=8, loc="lower right")
+
+    ax = axes[1, 0]
+    ax_r = axes[1, 1]
+    for lab, run, res in entries:
+        color, ls = styles[lab]
+        wp = wealth_path(res.weights, run.data.test_returns, run.data.test_dates)
+        ax.plot(wp.index, wp.values, color=color, ls=ls, lw=1.8, label=lab)
+        rc = rolling_cvar(res.weights, run.data.test_returns, run.data.test_dates, window=window, alpha=alpha)
+        ax_r.plot(rc.index, rc.values, color=color, ls=ls, lw=1.8, label=lab)
+    ax.axhline(1.0, color="grey", lw=0.8, ls=":")
+    ax.set_ylabel("Value (start = 1)")
+    ax.set_title("Out-of-sample wealth (fixed training weights)", fontsize=11)
+    ax.legend(fontsize=8)
+    ax_r.set_ylabel(f"Rolling CVaR {alpha:.0%} ({window}d)")
+    ax_r.yaxis.set_major_formatter(plt.FuncFormatter(lambda v, _: f"{v:.2%}"))
+    ax_r.set_title("Out-of-sample rolling tail risk", fontsize=11)
+    ax_r.legend(fontsize=8)
+    for a in (ax, ax_r):
+        a.xaxis.set_major_locator(mdates.YearLocator())
+        a.xaxis.set_major_formatter(mdates.DateFormatter("%Y"))
+
     fig.tight_layout()
     _save(fig, save_path)
     return fig

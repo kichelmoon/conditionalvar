@@ -33,6 +33,39 @@ TICKERS = [
     "PG",   "KO",   "WMT",                       # Consumer Staples
 ]
 
+# 100 US large caps from all 11 GICS sectors, each listed before 2010 and still
+# trading at the end of 2025 (Yahoo Finance symbols). Contains TICKERS as a subset,
+# so the 14-stock problem is a restriction of the 100-stock problem.
+# Caveat: selecting today's survivors makes the survivorship bias *stronger*.
+TICKERS_100 = [
+    # Information technology (17)
+    "AAPL", "MSFT", "NVDA", "ORCL", "CSCO", "INTC", "IBM", "QCOM", "TXN", "ADBE",
+    "CRM", "AMD", "ACN", "INTU", "ADP", "GOOGL", "AMZN",
+    # Communication services (5)
+    "VZ", "T", "CMCSA", "DIS", "NFLX",
+    # Financials (14)
+    "JPM", "BAC", "WFC", "C", "GS", "MS", "AXP", "USB", "PNC", "BLK",
+    "SCHW", "BK", "MET", "BRK-B",
+    # Health care (13)
+    "JNJ", "PFE", "MRK", "UNH", "ABT", "AMGN", "BMY", "LLY", "MDT", "GILD",
+    "CVS", "TMO", "DHR",
+    # Consumer staples (10)
+    "PG", "KO", "PEP", "WMT", "COST", "MO", "CL", "KMB", "GIS", "SYY",
+    # Consumer discretionary (10)
+    "HD", "MCD", "NKE", "SBUX", "LOW", "TGT", "BKNG", "TJX", "F", "YUM",
+    # Industrials (12)
+    "BA", "CAT", "GE", "HON", "MMM", "UNP", "UPS", "LMT", "DE", "EMR",
+    "FDX", "GD",
+    # Energy (6)
+    "XOM", "CVX", "COP", "SLB", "EOG", "OXY",
+    # Utilities (5)
+    "NEE", "DUK", "SO", "D", "AEP",
+    # Materials (4)
+    "APD", "SHW", "ECL", "NEM",
+    # Real estate (4)
+    "SPG", "AMT", "PSA", "EQR",
+]
+
 DEFAULT_CACHE_DIR = Path(__file__).resolve().parents[2] / "data_cache"
 
 
