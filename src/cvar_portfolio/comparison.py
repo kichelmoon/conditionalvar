@@ -31,7 +31,7 @@ import pandas as pd
 from .data import MarketData
 from .duality import DualAnalysis
 from .metrics import portfolio_metrics
-from .optimization import PortfolioResult, optimize_mean_variance, optimize_min_cvar
+from .optimization import PortfolioResult, equal_weight, optimize_mean_variance, optimize_min_cvar
 from .robustness import block_bootstrap_indices, cvar_difference_ci
 
 HELD_TOL = 1e-4
@@ -69,11 +69,16 @@ def subset_universe(data: MarketData, tickers: list[str]) -> MarketData:
 
 
 def run_universe(name: str, data: MarketData, alpha: float = 0.95) -> UniverseRun:
-    """Solve Min-CVaR and Min-Variance on the training data and analyse the dual."""
+    """
+    Solve Min-CVaR and Min-Variance on the training data, analyse the dual, and
+    add the naive 1/n portfolio as an estimation-free benchmark.
+    """
     cvar = optimize_min_cvar(data.train_returns, alpha=alpha)
     mv = optimize_mean_variance(data.train_returns, alpha=alpha)
+    ew = equal_weight(data.train_returns, alpha=alpha)
     dual = DualAnalysis(cvar, data.train_dates, data.train_returns, data.tickers)
-    return UniverseRun(name, data, alpha, {"Min-CVaR": cvar, "Min-Variance": mv}, dual)
+    return UniverseRun(name, data, alpha,
+                       {"Min-CVaR": cvar, "Min-Variance": mv, "1/n": ew}, dual)
 
 
 def effective_n(w: np.ndarray) -> float:
@@ -154,6 +159,7 @@ def bootstrap_instability(
     """
     Mean L1 distance ||w_boot - w*||_1 (in [0, 2]) between re-optimised and
     full-sample weights, per portfolio. Scale-free, so comparable across n.
+    1/n is omitted: it does not depend on the data, so its distance is 0 by construction.
     """
     rng = np.random.default_rng(seed)
     R = run.data.train_returns
@@ -168,6 +174,14 @@ def bootstrap_instability(
             dist[k].append(np.abs(opt(X) - run.results[k].weights).sum())
     return pd.Series({k: float(np.mean(v)) for k, v in dist.items()},
                      name=f"{run.name}: mean ||w_boot - w*||_1")
+
+
+def oos_cvar_vs_benchmark(run: UniverseRun, portfolio: str, benchmark: str = "1/n",
+                          **kwargs) -> dict:
+    """Block-bootstrap CI for OOS CVaR(portfolio) - CVaR(benchmark) within one universe, paired by day."""
+    R = run.data.test_returns
+    return cvar_difference_ci(R @ run.results[portfolio].weights,
+                              R @ run.results[benchmark].weights, alpha=run.alpha, **kwargs)
 
 
 def oos_cvar_difference(run_a: UniverseRun, run_b: UniverseRun, portfolio: str,

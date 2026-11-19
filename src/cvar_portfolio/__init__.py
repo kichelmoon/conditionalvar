@@ -4,6 +4,7 @@ from .risk import empirical_cvar, empirical_var, tail_mass
 from .optimization import (
     FeasibleSet,
     PortfolioResult,
+    equal_weight,
     optimize_mean_variance,
     optimize_min_cvar,
 )
@@ -15,6 +16,7 @@ __all__ = [
     "tail_mass",
     "FeasibleSet",
     "PortfolioResult",
+    "equal_weight",
     "optimize_mean_variance",
     "optimize_min_cvar",
     "DualAnalysis",

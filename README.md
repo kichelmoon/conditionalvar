@@ -36,3 +36,4 @@ Prices are cached in `data_cache/` (git-ignored), so later runs are reproducible
 - R. T. Rockafellar, S. Uryasev (2002). *Conditional value-at-risk for general loss distributions.* Journal of Banking & Finance 26(7), 1443–1471.
 - C. Acerbi, D. Tasche (2002). *On the coherence of expected shortfall.* Journal of Banking & Finance 26(7), 1487–1503.
 - P. Artzner, F. Delbaen, J.-M. Eber, D. Heath (1999). *Coherent measures of risk.* Mathematical Finance 9(3), 203–228.
+- V. DeMiguel, L. Garlappi, R. Uppal (2009). *Optimal versus naive diversification: How inefficient is the 1/N portfolio strategy?* Review of Financial Studies 22(5), 1915–1953.

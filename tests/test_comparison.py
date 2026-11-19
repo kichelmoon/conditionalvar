@@ -4,8 +4,8 @@ import pandas as pd
 import pytest
 
 from cvar_portfolio.comparison import (
-    bootstrap_instability, check_nesting, effective_n, quality_table,
-    run_universe, subset_universe,
+    bootstrap_instability, check_nesting, effective_n, oos_cvar_vs_benchmark,
+    quality_table, run_universe, subset_universe,
 )
 from cvar_portfolio.data import TICKERS, TICKERS_100, market_data_from_prices
 
@@ -52,7 +52,19 @@ def test_effective_n():
 
 def test_quality_table_and_bootstrap(universes):
     qt = quality_table(list(universes))
-    assert qt.shape[1] == 4
+    assert qt.shape[1] == 6          # 2 universes x (Min-CVaR, Min-Variance, 1/n)
     assert qt.loc["dual: duality gap"].dropna().abs().max() < 1e-6
     inst = bootstrap_instability(universes[0], n_boot=3)
     assert ((inst >= 0) & (inst <= 2)).all()
+
+
+def test_equal_weight_benchmark(universes):
+    for run in universes:
+        n = len(run.data.tickers)
+        ew, cvar = run.results["1/n"], run.results["Min-CVaR"]
+        assert np.allclose(ew.weights, 1 / n)
+        assert effective_n(ew.weights) == pytest.approx(n)
+        # 1/n is feasible for the CVaR-LP, so the optimum can only be lower in sample.
+        assert cvar.cvar <= ew.cvar + 1e-9
+        ci = oos_cvar_vs_benchmark(run, "Min-CVaR")
+        assert ci["ci_low"] <= ci["ci_high"]

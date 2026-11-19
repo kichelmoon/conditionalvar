@@ -31,6 +31,7 @@ plt.rcParams.update({
 COLORS = {
     "cvar": "#1f4e79",     # dark blue
     "mv": "#c55a11",       # burnt orange
+    "ew": "#548235",       # green, 1/n benchmark
     "tail": "#c00000",     # red for tail scenarios
     "frac": "#e69f00",     # amber for fractional atoms
     "neutral": "#595959",  # grey
@@ -38,6 +39,7 @@ COLORS = {
 PORTFOLIO_STYLE = {
     "Min-CVaR": (COLORS["cvar"], "-"),
     "Min-Variance": (COLORS["mv"], "--"),
+    "1/n": (COLORS["ew"], "-."),
 }
 
 CRISES = [

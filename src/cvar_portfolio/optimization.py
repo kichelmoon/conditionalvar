@@ -3,6 +3,7 @@ Portfolio optimisers.
 
   1. CVaR minimisation as a linear program (Rockafellar & Uryasev, 2000)
   2. Mean-variance (Markowitz, 1952)
+  3. Equal weight 1/n (naive benchmark, DeMiguel, Garlappi & Uppal, 2009)
 
 Both share the same feasible set W of weights (budget, long-only, box,
 optional return target), described by `FeasibleSet`. Keeping W explicit lets
@@ -178,3 +179,16 @@ def optimize_mean_variance(
     _check_status(prob.status, "Mean-Variance")
 
     return _summarise(returns, np.asarray(w.value, dtype=float), alpha, feasible)
+
+
+def equal_weight(returns: np.ndarray, alpha: float = 0.95) -> PortfolioResult:
+    """
+    Naive 1/n portfolio: w_i = 1/n for every asset, no estimation at all.
+
+    It ignores the data except for the number of columns, so it has zero
+    estimation error and is the standard benchmark for whether an optimiser
+    adds value out of sample. `alpha` is only used to report CVaR / VaR.
+    """
+    returns = np.asarray(returns, dtype=float)
+    n = returns.shape[1]
+    return _summarise(returns, np.full(n, 1.0 / n), alpha, FeasibleSet())
