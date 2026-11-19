@@ -2,6 +2,7 @@
 
 Minimising the Conditional Value at Risk (CVaR) of a stock portfolio as a linear program, and reading the dual solution as a worst-case probability measure over historical scenarios.
 
+![plot](./results/universe_comparison.png)
 ## Motivation
 
 The first technique usually taught in portfolio optimisation is Markowitz *minimum variance*. Variance is symmetric: a portfolio that outperforms is penalised just as much as one that underperforms. On the plus side, the problem is a convex QP and easy to solve.
